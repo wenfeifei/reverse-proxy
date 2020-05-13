@@ -33,17 +33,20 @@ namespace BenchmarkApp
                 throw new ArgumentException("--backendUrls is required");
             }
 
-            var configDictionary = new Dictionary<string, string>
+            Dictionary<string, string> configDictionary;
+
+            try {
+            configDictionary = new Dictionary<string, string>
             {
                 { "Routes:0:RouteId", "route" },
                 { "Routes:0:BackendId", "backend" },
                 { "Routes:0:Match:Host", new Uri(urls.Split(';', 1)[0]).Host },
-            };
+            }; } catch (Exception ex) { throw new Exception(urls, ex); }
 
             var backendCount = 0;
             foreach (var backendUrl in backendUrls.Split(';'))
             {
-                configDictionary.Add($"Backends:backend:Endpoints:endpoint{backendCount++}:Address", backendUrl);
+                configDictionary.Add($"Backends:backend:Destinations:destination{backendCount++}:Address", backendUrl);
             }
 
             var proxyConfig = new ConfigurationBuilder().AddInMemoryCollection(configDictionary).Build();
