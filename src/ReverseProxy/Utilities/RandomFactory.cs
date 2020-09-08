@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.ReverseProxy.Utilities
 {
     /// <inheritdoc/>
-    public class RandomFactory : IRandomFactory
+    internal class RandomFactory : IRandomFactory
     {
         /// <inheritdoc/>
         public Random CreateRandomInstance()

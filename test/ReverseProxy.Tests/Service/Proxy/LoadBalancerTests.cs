@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.ReverseProxy.Abstractions;
+using Microsoft.ReverseProxy.Common;
 using Microsoft.ReverseProxy.RuntimeModel;
 using Microsoft.ReverseProxy.Utilities;
 using Tests.Common;
@@ -27,7 +28,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
         {
             var loadBalancer = Create<LoadBalancer>();
             var destinations = new DestinationInfo[0];
-            var options = new BackendConfig.BackendLoadBalancingOptions((LoadBalancingMode)(-1));
+            var options = new ClusterConfig.ClusterLoadBalancingOptions((LoadBalancingMode)(-1));
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
@@ -42,11 +43,11 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
             {
                 new DestinationInfo("d1"),
             };
-            var options = new BackendConfig.BackendLoadBalancingOptions((LoadBalancingMode)(-1));
+            var options = new ClusterConfig.ClusterLoadBalancingOptions((LoadBalancingMode)(-1));
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
-            Assert.Equal(result, destinations[0]);
+            Assert.Same(destinations[0], result);
         }
 
         [Fact]
@@ -58,7 +59,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
                 new DestinationInfo("d1"),
                 new DestinationInfo("d2"),
             };
-            var options = new BackendConfig.BackendLoadBalancingOptions((LoadBalancingMode)(-1));
+            var options = new ClusterConfig.ClusterLoadBalancingOptions((LoadBalancingMode)(-1));
 
             Action action = () => loadBalancer.PickDestination(destinations, in options);
 
@@ -76,7 +77,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
                 new DestinationInfo("d1"),
                 new DestinationInfo("d2"),
             };
-            var options = new BackendConfig.BackendLoadBalancingOptions(LoadBalancingMode.First);
+            var options = new ClusterConfig.ClusterLoadBalancingOptions(LoadBalancingMode.First);
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
@@ -93,7 +94,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
                 new DestinationInfo("d2"),
             };
             RandomInstance.Sequence = new[] { 1 };
-            var options = new BackendConfig.BackendLoadBalancingOptions(LoadBalancingMode.Random);
+            var options = new ClusterConfig.ClusterLoadBalancingOptions(LoadBalancingMode.Random);
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
@@ -111,7 +112,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
             };
             destinations[0].ConcurrencyCounter.Increment();
             RandomInstance.Sequence = new[] { 1, 0 };
-            var options = new BackendConfig.BackendLoadBalancingOptions(LoadBalancingMode.PowerOfTwoChoices);
+            var options = new ClusterConfig.ClusterLoadBalancingOptions(LoadBalancingMode.PowerOfTwoChoices);
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
@@ -128,7 +129,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
                 new DestinationInfo("d2"),
             };
             destinations[0].ConcurrencyCounter.Increment();
-            var options = new BackendConfig.BackendLoadBalancingOptions(LoadBalancingMode.LeastRequests);
+            var options = new ClusterConfig.ClusterLoadBalancingOptions(LoadBalancingMode.LeastRequests);
 
             var result = loadBalancer.PickDestination(destinations, in options);
 
@@ -145,7 +146,7 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
                 new DestinationInfo("d2"),
             };
             destinations[0].ConcurrencyCounter.Increment();
-            var options = new BackendConfig.BackendLoadBalancingOptions(LoadBalancingMode.RoundRobin);
+            var options = new ClusterConfig.ClusterLoadBalancingOptions(LoadBalancingMode.RoundRobin);
 
             var result0 = loadBalancer.PickDestination(destinations, in options);
             var result1 = loadBalancer.PickDestination(destinations, in options);
@@ -156,27 +157,6 @@ namespace Microsoft.ReverseProxy.Service.Proxy.Tests
             Assert.Same(result1, destinations[1]);
             Assert.Same(result2, destinations[0]);
             Assert.Same(result3, destinations[1]);
-        }
-
-        internal class TestRandomFactory : IRandomFactory
-        {
-            internal TestRandom Instance { get; set; }
-
-            public Random CreateRandomInstance()
-            {
-                return Instance;
-            }
-        }
-
-        public class TestRandom : Random
-        {
-            public int[] Sequence { get; set; }
-            public int Offset { get; set; }
-
-            public override int Next(int maxValue)
-            {
-                return Sequence[Offset++];
-            }
         }
     }
 }

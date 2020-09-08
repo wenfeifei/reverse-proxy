@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.ReverseProxy.ConfigModel;
-using Microsoft.ReverseProxy.Utilities;
+using Microsoft.ReverseProxy.Abstractions;
+using Microsoft.ReverseProxy.Service.RuntimeModel.Transforms;
 
 namespace Microsoft.ReverseProxy.RuntimeModel
 {
     /// <summary>
     /// Immutable representation of the portions of a route
     /// that only change in reaction to configuration changes
-    /// (e.g. rule, priority, action, etc.).
+    /// (e.g. rule, order, action, etc.).
     /// </summary>
     /// <remarks>
     /// All members must remain immutable to avoid thread safety issues.
@@ -21,36 +22,38 @@ namespace Microsoft.ReverseProxy.RuntimeModel
     {
         public RouteConfig(
             RouteInfo route,
-            string matcherSummary,
-            int? priority,
-            BackendInfo backendOrNull,
-            IReadOnlyList<AspNetCore.Http.Endpoint> aspNetCoreEndpoints)
+            int configHash,
+            int? order,
+            ClusterInfo cluster,
+            IReadOnlyList<AspNetCore.Http.Endpoint> aspNetCoreEndpoints,
+            Transforms transforms)
         {
-            Contracts.CheckValue(route, nameof(route));
-            Contracts.CheckValue(aspNetCoreEndpoints, nameof(aspNetCoreEndpoints));
+            Route = route ?? throw new ArgumentNullException(nameof(route));
+            Endpoints = aspNetCoreEndpoints ?? throw new ArgumentNullException(nameof(aspNetCoreEndpoints));
 
-            Route = route;
-            MatcherSummary = matcherSummary;
-            Priority = priority;
-            BackendOrNull = backendOrNull;
-            Endpoints = aspNetCoreEndpoints;
+            ConfigHash = configHash;
+            Order = order;
+            Cluster = cluster;
+            Transforms = transforms;
         }
 
         public RouteInfo Route { get; }
 
-        internal string MatcherSummary{ get; }
+        internal int ConfigHash { get; }
 
-        public int? Priority { get; }
+        public int? Order { get; }
 
-        public BackendInfo BackendOrNull { get; }
+        // May not be populated if the cluster config is missing.
+        public ClusterInfo Cluster { get; }
 
         public IReadOnlyList<AspNetCore.Http.Endpoint> Endpoints { get; }
 
-        public bool HasConfigChanged(ParsedRoute newConfig, BackendInfo backendOrNull)
+        public Transforms Transforms { get; }
+
+        public bool HasConfigChanged(ProxyRoute newConfig, ClusterInfo cluster)
         {
-            return Priority != newConfig.Priority
-                || BackendOrNull != backendOrNull
-                || !MatcherSummary.Equals(newConfig.GetMatcherSummary());
+            return Cluster != cluster
+                || !ConfigHash.Equals(newConfig.GetConfigHash());
         }
     }
 }

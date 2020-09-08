@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <Description>Reverse proxy toolkit for building fast proxy servers in .NET using the infrastructure from ASP.NET and .NET</Description>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.ReverseProxy</RootNamespace>
   </PropertyGroup>
@@ -15,6 +16,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
     <InternalsVisibleTo Include="Microsoft.ReverseProxy.Tests" />
+    <InternalsVisibleTo Include="Microsoft.ReverseProxy.FunctionalTests" />
   </ItemGroup>
 
   <ItemGroup>

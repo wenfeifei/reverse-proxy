@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.ReverseProxy</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\TestCertificates\*.*" LinkBase="TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="validSelfSignedClientEkuCertificate.cer">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />

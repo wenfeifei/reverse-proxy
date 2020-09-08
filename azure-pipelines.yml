@@ -48,10 +48,10 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Server.Amd64.VS2019.Open
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2019
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre
         variables:
           
 
@@ -117,8 +117,7 @@ stages:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
-            $(_OfficialBuildArgs)
-            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+            $(_InternalRuntimeDownloadArgs)
           displayName: Build
         - task: PublishBuildArtifacts@1
           displayName: Upload TestResults
@@ -181,7 +180,7 @@ stages:
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
         -TsaBugAreaPath $(_TsaBugAreaPath)
         -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Tye"
-        -TsaCodebaseName "Tye"
+        -TsaRepositoryName "ReverseProxy"
+        -TsaCodebaseName "ReverseProxy"
         -TsaPublish $True
         -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
